@@ -91,3 +91,4 @@ to apply it. Commit the generated files in `drizzle/`.
 
 There is no user-management screen. Set `ADMIN_EMAIL`, `ADMIN_PASSWORD` and `ADMIN_NAME` to the new
 person's details and run `npm run db:seed`; it adds the user if that email does not exist yet.
+
