@@ -6,6 +6,7 @@ import { Icon } from "@/components/icons";
 import { Markdown } from "@/components/markdown";
 import { CaseCard, CtaBand, PageHero } from "@/components/sections";
 import { getCaseStudies, getService, getServices } from "@/lib/data";
+import { site } from "@/lib/site";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -23,6 +24,37 @@ export default async function ServicePage({ params }: Props) {
   const [all, studies] = await Promise.all([getServices(), getCaseStudies()]);
   const related = studies.filter((s) => s.service === service.title).slice(0, 2);
   const others = all.filter((s) => s.slug !== service.slug);
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      name: service.title,
+      serviceType: service.title,
+      description: service.summary,
+      url: `${site.url}/services/${service.slug}`,
+      provider: { "@type": "Organization", name: site.legalName, url: site.url },
+      areaServed: ["India", "United Arab Emirates", "United Kingdom", "United States", "Europe"],
+      ...(service.capabilities.length
+        ? {
+            hasOfferCatalog: {
+              "@type": "OfferCatalog",
+              name: `${service.title} capabilities`,
+              itemListElement: service.capabilities.map((c) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: c } })),
+            },
+          }
+        : {}),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: site.url },
+        { "@type": "ListItem", position: 2, name: "Services", item: `${site.url}/services` },
+        { "@type": "ListItem", position: 3, name: service.title, item: `${site.url}/services/${service.slug}` },
+      ],
+    },
+  ];
 
   return (
     <>
@@ -93,6 +125,7 @@ export default async function ServicePage({ params }: Props) {
         </div>
       </section>
       <CtaBand />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     </>
   );
 }
